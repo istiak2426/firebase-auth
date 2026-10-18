@@ -12,6 +12,7 @@ import { TasksSection } from './components/TasksSection';
 import { InsightsSection } from './components/InsightsSection';
 import { NoteModal } from './components/NoteModal';
 import { TaskModal } from './components/TaskModal';
+import { AuthErrorBanner } from './components/AuthErrorBanner';
 import {
   subscribeUserNotes,
   createNote,
@@ -353,6 +354,8 @@ function WorkspaceApp() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <AuthErrorBanner />
+
         <SyncBanner
           onSyncDemoData={handleMigrateSampleData}
           hasDemoData={!user}
