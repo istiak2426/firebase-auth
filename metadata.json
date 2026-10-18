@@ -1,0 +1,6 @@
+{
+  "name": "SyncSphere - Cloud Workspace",
+  "description": "Modern real-time cloud workspace with Google Firebase Authentication, instant Firestore syncing, smart notes, task management, and offline support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

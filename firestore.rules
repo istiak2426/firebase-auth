@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Validate Note Entity
+    function isValidNote(data) {
+      return data.keys().hasAll(['userId', 'title', 'content', 'category', 'color', 'pinned', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['userId', 'title', 'content', 'category', 'color', 'pinned', 'tags', 'createdAt', 'updatedAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.title is string && data.title.size() <= 200
+        && data.content is string && data.content.size() <= 50000
+        && data.category is string && data.category.size() <= 50
+        && data.color is string && data.color.size() <= 30
+        && data.pinned is bool
+        && (!('tags' in data) || (data.tags is list && data.tags.size() <= 20))
+        && data.createdAt is string && data.createdAt.size() <= 60
+        && data.updatedAt is string && data.updatedAt.size() <= 60;
+    }
+
+    // Validate Task Entity
+    function isValidTask(data) {
+      return data.keys().hasAll(['userId', 'title', 'status', 'priority', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['userId', 'title', 'description', 'status', 'priority', 'dueDate', 'tags', 'createdAt', 'updatedAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.title is string && data.title.size() <= 200
+        && (!('description' in data) || (data.description is string && data.description.size() <= 5000))
+        && data.status in ['todo', 'in_progress', 'completed']
+        && data.priority in ['low', 'medium', 'high']
+        && (!('dueDate' in data) || (data.dueDate is string && data.dueDate.size() <= 50))
+        && (!('tags' in data) || (data.tags is list && data.tags.size() <= 20))
+        && data.createdAt is string && data.createdAt.size() <= 60
+        && data.updatedAt is string && data.updatedAt.size() <= 60;
+    }
+
+    // Validate UserProfile Entity
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'displayName', 'email', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['userId', 'displayName', 'email', 'photoURL', 'theme', 'createdAt', 'updatedAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.email is string && data.email.size() <= 120
+        && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 500))
+        && (!('theme' in data) || (data.theme in ['light', 'dark', 'system']))
+        && data.createdAt is string && data.createdAt.size() <= 60
+        && data.updatedAt is string && data.updatedAt.size() <= 60;
+    }
+
+    // Notes Collection
+    match /notes/{noteId} {
+      allow get: if isValidId(noteId) && isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isValidId(noteId) && isSignedIn()
+        && incoming().userId == request.auth.uid
+        && isValidNote(incoming());
+      allow update: if isValidId(noteId) && isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && incoming().userId == resource.data.userId
+        && incoming().createdAt == resource.data.createdAt
+        && isValidNote(incoming());
+      allow delete: if isValidId(noteId) && isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // Tasks Collection
+    match /tasks/{taskId} {
+      allow get: if isValidId(taskId) && isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isValidId(taskId) && isSignedIn()
+        && incoming().userId == request.auth.uid
+        && isValidTask(incoming());
+      allow update: if isValidId(taskId) && isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && incoming().userId == resource.data.userId
+        && incoming().createdAt == resource.data.createdAt
+        && isValidTask(incoming());
+      allow delete: if isValidId(taskId) && isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // User Profile Collection (Single user isolation)
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isValidId(userId) && isOwner(userId)
+        && incoming().userId == request.auth.uid
+        && isValidUserProfile(incoming());
+      allow update: if isValidId(userId) && isOwner(userId)
+        && incoming().userId == request.auth.uid
+        && incoming().createdAt == resource.data.createdAt
+        && isValidUserProfile(incoming());
+      allow delete: if isValidId(userId) && isOwner(userId);
+    }
+  }
+}

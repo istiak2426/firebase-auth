@@ -1,0 +1,164 @@
+{
+  "entities": {
+    "Note": {
+      "title": "Note",
+      "description": "User note with title, content, tags, color, category, pinned state, and timestamps",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner UID",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the note",
+          "maxLength": 200
+        },
+        "content": {
+          "type": "string",
+          "description": "Markdown text or formatted content of the note",
+          "maxLength": 50000
+        },
+        "category": {
+          "type": "string",
+          "description": "Category or notebook grouping",
+          "maxLength": 50
+        },
+        "color": {
+          "type": "string",
+          "description": "Accent color identifier for visual grouping",
+          "maxLength": 30
+        },
+        "pinned": {
+          "type": "boolean",
+          "description": "Whether the note is pinned to top"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags associated with the note"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp ISO or server timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp ISO or server timestamp"
+        }
+      },
+      "required": ["userId", "title", "content", "category", "color", "pinned", "createdAt", "updatedAt"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "User task item with status, priority, due date and tags",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner UID",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "description": "Title or headline of the task",
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "description": "Extended notes or details for the task",
+          "maxLength": 5000
+        },
+        "status": {
+          "type": "string",
+          "enum": ["todo", "in_progress", "completed"],
+          "description": "Task status"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Task priority level"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Optional due date ISO string",
+          "maxLength": 50
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags associated with the task"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp ISO or server timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp ISO or server timestamp"
+        }
+      },
+      "required": ["userId", "title", "status", "priority", "createdAt", "updatedAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile settings and preferences",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the user",
+          "maxLength": 128
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "maxLength": 120
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar photo URL",
+          "maxLength": 500
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["light", "dark", "system"],
+          "description": "UI theme preference"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp ISO or server timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp ISO or server timestamp"
+        }
+      },
+      "required": ["userId", "displayName", "email", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/notes/{noteId}": {
+      "schema": "Note",
+      "description": "Collection of user notes with title, markdown content, tags, color, and categories"
+    },
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Collection of user tasks with priorities, status, and due dates"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile preferences document stored per authenticated user"
+    }
+  }
+}
