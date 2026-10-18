@@ -130,6 +130,42 @@ Once deployed, Vercel gives you a URL like `https://your-app-name.vercel.app`:
 
 ---
 
+## 🖥️ Hosting on Windows IIS (Internet Information Services)
+
+The app includes `public/web.config` configured for IIS SPA routing and MIME types.
+
+### Step 1: Install IIS Prerequisites
+1. Open **Turn Windows features on or off** in Windows Search.
+2. Check **Internet Information Services** > **World Wide Web Services** > **Common HTTP Features** (ensure *Default Document*, *Static Content* are checked).
+3. Download and install the **[IIS URL Rewrite Module](https://www.iis.net/downloads/microsoft/url-rewrite)** from Microsoft.
+
+### Step 2: Build the Production Bundle
+In your project directory, run:
+```bash
+npm run build
+```
+This generates the self-contained production bundle in the `dist/` folder (including `web.config`).
+
+### Step 3: Add Website in IIS Manager
+1. Press `Win + R`, type `inetmgr`, and press Enter to open **IIS Manager**.
+2. Right-click **Sites** in the left panel and click **Add Website...**.
+3. Set:
+   - **Site name**: `SyncSphere`
+   - **Physical path**: Browse to your project's `dist` folder (e.g., `C:\Users\...\firebase-auth\dist`).
+   - **Port**: `80` (or `8080` if port 80 is used).
+4. Click **OK**.
+
+### Step 4: Set Folder Permissions
+1. In Windows Explorer, right-click the `dist` folder > **Properties** > **Security** tab.
+2. Click **Edit...** > **Add...**.
+3. Type `IIS_IUSRS` and click **Check Names**, then **OK**.
+4. Check **Read & execute**, **List folder contents**, **Read** > click **OK**.
+
+### Step 5: Test and Authorize Domain in Firebase
+Open `http://localhost:8080` (or your chosen port) in your browser. Ensure `localhost` is added to **Authorized domains** in [Firebase Console](https://console.firebase.google.com/project/gen-lang-client-0288594606/authentication/settings).
+
+---
+
 ## 🛠 Features
 - **Real-Time Cloud Sync**: Uses Firestore snapshot listeners for instant updates without page refreshes.
 - **Google Identity Authentication**: Secure user login with profile pictures and verified accounts.
